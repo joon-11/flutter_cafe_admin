@@ -1,29 +1,53 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_cafe_admin/cafe_item.dart';
+import 'package:flutter_cafe_admin/cafe_result.dart';
+import 'package:flutter_cafe_admin/order.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  runApp(const MyAPP());
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const Navi());
 }
 
-class MyAPP extends StatelessWidget {
-  const MyAPP({super.key});
+class Navi extends StatefulWidget {
+  const Navi({super.key});
 
+  @override
+  State<Navi> createState() => _NaviState();
+}
+
+class _NaviState extends State<Navi> {
+  int _index = 1;
+
+  List<BottomNavigationBarItem> items = [
+    const BottomNavigationBarItem(
+        icon: Icon(Icons.shopping_bag), label: 'order'),
+    const BottomNavigationBarItem(icon: Icon(Icons.abc), label: 'items'),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.show_chart),
+      label: 'result',
+    ),
+  ];
+
+  var pages = [const CafeOrder(), const CafeItem(), const CafeResult()];
+  dynamic body;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            var db = FirebaseFirestore.instance;
-            var data = {'categoryName': '커피', 'isUsed': true};
-            await db.collection('cafe-category').add(data);
+        body: body,
+        bottomNavigationBar: BottomNavigationBar(
+          items: items,
+          currentIndex: _index,
+          onTap: (value) {
+            setState(() {
+              body = pages[value];
+              _index = value;
+            });
           },
-          child: const Icon(Icons.ac_unit),
         ),
       ),
     );
