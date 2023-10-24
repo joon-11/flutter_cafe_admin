@@ -16,22 +16,23 @@ class MyCafe {
 
   Future<dynamic> get({
     required String collectionName,
-    required String? id, //고유아이디
-    required String? filedName, //이름
-    required String? filedValue,
+    String? id, //고유아이디
+    String? fieldName, //이름
+    String? fieldValue,
   }) async {
     try {
       //전체찾기
-      if (id == null && filedName == null) {
-        return db.collection(collectionName).get();
+      if (id == null && fieldName == null) {
+        return await db.collection(collectionName).get();
       } else if (id != null) {
         //고유아이디로 찾아서 리턴
-        return db.collection(collectionName).doc(id).get();
-      } else if (filedName != null) {
+        return await db.collection(collectionName).doc(id).get();
+      } else if (fieldName != null) {
         //필드값을 가지고 찾기
-        return db
+        return await db
             .collection(collectionName)
-            .where(filedName, isEqualTo: filedValue);
+            .where(fieldName, isEqualTo: fieldValue)
+            .get();
       }
     } catch (e) {
       return null;
@@ -42,6 +43,19 @@ class MyCafe {
   Future<bool> delete({required String collectionName, required id}) async {
     try {
       var result = await db.collection(collectionName).doc(id).delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> update({
+    required collectionName,
+    required String id,
+    required data,
+  }) async {
+    try {
+      var result = await db.collection(collectionName).doc(id).update(data);
       return true;
     } catch (e) {
       return false;

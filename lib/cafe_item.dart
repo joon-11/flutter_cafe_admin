@@ -37,13 +37,15 @@ class _CafeItemState extends State<CafeItem> {
                     onSelected: (value) async {
                       switch (value) {
                         case 'modify':
-                          var result = Navigator.push(
+                          var result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     CafeCategoryAddForm(id: datas[index].id),
                               ));
-
+                          if (result == true) {
+                            getCategory();
+                          }
                           break;
                         case 'delete':
                           var result = await myCafe.delete(
@@ -81,8 +83,8 @@ class _CafeItemState extends State<CafeItem> {
         future: myCafe.get(
           collectionName: categoryCollectionName,
           id: null,
-          filedName: null,
-          filedValue: null,
+          fieldName: null,
+          fieldValue: null,
         ),
       );
     });
@@ -107,7 +109,7 @@ class _CafeItemState extends State<CafeItem> {
               builder: (context) => CafeCategoryAddForm(id: null),
             ),
           );
-          if (result == true) {
+          if (result) {
             getCategory();
           }
         },
@@ -135,10 +137,14 @@ class _CafeCategoryAddFormState extends State<CafeCategoryAddForm> {
     var data = await myCafe.get(
       collectionName: categoryCollectionName,
       id: id,
-      filedName: null,
-      filedValue: null,
+      fieldName: null,
+      fieldValue: null,
     );
-    return null;
+    setState(() {
+      controller.text = data['categoryName'];
+      isUsed = data['isUsed'];
+    });
+    return data;
   }
 
   @override
@@ -147,8 +153,7 @@ class _CafeCategoryAddFormState extends State<CafeCategoryAddForm> {
     super.initState();
     id = widget.id;
     if (id != null) {
-      var data = getData(id: id!);
-      print(data);
+      getData(id: id!);
     }
   }
 
@@ -162,10 +167,23 @@ class _CafeCategoryAddFormState extends State<CafeCategoryAddForm> {
           TextButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                var result = await myCafe.insert(
-                  collectionName: categoryCollectionName,
-                  data: {'categoryName': controller.text, 'isUsed': isUsed},
-                );
+                var data = {
+                  'categoryName': controller.text,
+                  'isUsed': isUsed,
+                };
+                var result = id != null
+                    ? await myCafe.update(
+                        collectionName: categoryCollectionName,
+                        id: id!,
+                        data: data,
+                      )
+                    : await myCafe.insert(
+                        collectionName: categoryCollectionName,
+                        data: {
+                          'categoryName': controller.text,
+                          'isUsed': isUsed,
+                        },
+                      );
                 if (result) {
                   Navigator.pop(context, true);
                 }
