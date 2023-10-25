@@ -27,6 +27,10 @@ class MyCafe {
       } else if (id != null) {
         //고유아이디로 찾아서 리턴
         return await db.collection(collectionName).doc(id).get();
+        // return await db
+        //     .collection(collectionName)
+        //     .where(FieldPath.documentId, isEqualTo: id)
+        //     .get();
       } else if (fieldName != null) {
         //필드값을 가지고 찾기
         return await db
