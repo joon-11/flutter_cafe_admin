@@ -332,7 +332,38 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
   TextEditingController controllerTitle = TextEditingController();
   TextEditingController controllerPrice = TextEditingController();
   TextEditingController controllerDesc = TextEditingController();
+  TextEditingController controllerOptionName = TextEditingController();
+  TextEditingController controllerOptionValue = TextEditingController();
   bool isSoldOut = false;
+  var options = [];
+  dynamic optionsView = const Text('옵션이 없습니다.');
+
+  void showOptionList() {
+    setState(() {
+      optionsView = ListView.separated(
+          itemBuilder: (context, index) {
+            var title = options[index]['optionName'];
+            var subtitle = options[index]['optionValue']
+                .toString()
+                .replaceAll('\n', ' / ');
+            return ListTile(
+              title: Text(title),
+              subtitle: Text(subtitle),
+              trailing: IconButton(
+                  onPressed: () {
+                    options.removeAt(index);
+                    showOptionList();
+                  },
+                  icon: const Icon(Icons.close)),
+            );
+          },
+          separatorBuilder: (context, index) => const Divider(),
+          itemCount: options.length);
+    });
+    controllerOptionName.clear();
+    controllerOptionValue.clear();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -354,6 +385,8 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
                 'itemPrice': int.parse(controllerPrice.text),
                 'itemDesc': controllerDesc.text,
                 'itemIsSoldOut': isSoldOut,
+                'categoryId': categotyid,
+                'options': options,
               };
               var result = await myCafe.insert(
                   collectionName: itemCollectionName, data: data);
@@ -361,7 +394,10 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
                 Navigator.pop(context, true);
               }
             },
-            child: const Text('Save'),
+            child: const Text(
+              'Save',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -374,6 +410,7 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
           TextFormField(
             controller: controllerPrice,
             decoration: const InputDecoration(label: Text('가격')),
+            keyboardType: TextInputType.number,
           ),
           TextFormField(
             controller: controllerDesc,
@@ -388,6 +425,29 @@ class _CafeItemAddFormState extends State<CafeItemAddForm> {
                 },
               );
             },
+          ),
+          Expanded(child: optionsView),
+          IconButton(
+            onPressed: () {
+              var optionName = controllerOptionName.text;
+              var optionValue = controllerOptionValue.text;
+              if (options != '' && optionValue != '') {
+                var data = {
+                  'optionName': optionName,
+                  'optionValue': optionValue,
+                };
+                options.add(data);
+                showOptionList();
+              }
+            },
+            icon: const Icon(Icons.arrow_circle_up),
+          ),
+          TextFormField(
+            controller: controllerOptionName,
+          ),
+          TextFormField(
+            controller: controllerOptionValue,
+            maxLines: 10,
           )
         ],
       ),
