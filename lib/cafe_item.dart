@@ -251,6 +251,67 @@ class _CafeItemListState extends State<CafeItemList> {
     super.initState();
     id = widget.id;
     getCategory(id);
+    getItemList(id);
+  }
+
+  Future<void> getItemList(String? categoryId) async {
+    var datas = categoryId == null
+        ? myCafe.get(collectionName: 'cafe-item')
+        : myCafe.get(
+            collectionName: 'cafe-item',
+            fieldName: 'categoryId',
+            fieldValue: categoryId,
+          );
+    setState(() {
+      itemList = FutureBuilder(
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            //쿼리스냅샷 데이터이기 때문에 docs 까지
+            var items = snapshot.data.docs;
+            if (items.length == 0) {
+              return const Text('데이터가 없습니다.');
+            } else {
+              return ListView.separated(
+                  itemBuilder: (context, index) {
+                    //items[index]['itemName'];
+                    var item = items[index]; //item['itemName']
+                    return ListTile(
+                      title: Text('${item['itemName']} (${item['itemPrice']})'),
+                      subtitle: Text('${item['options']}'),
+                      trailing: PopupMenuButton(
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            child: const Text('수정'),
+                            onTap: () {
+                              //수정하는 코드 작성
+                              //cafeitemaddform 을 호출하는데 정보를 불러서 처리(id)
+                            },
+                          ),
+                          PopupMenuItem(
+                            child: const Text('삭제'),
+                            onTap: () async {
+                              await myCafe
+                                  .delete(
+                                      collectionName: 'cafe-item', id: item.id)
+                                  .then((value) {
+                                return getItemList(categoryId);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemCount: items.length);
+            }
+          } else {
+            return const Text('loading...');
+          }
+        },
+        future: datas,
+      );
+    });
   }
 
   Future<void> getCategory(String id) async {
@@ -269,7 +330,9 @@ class _CafeItemListState extends State<CafeItemList> {
             return DropdownMenu(
               dropdownMenuEntries: entries,
               initialSelection: id,
-              onSelected: (value) => print('$value itemList'),
+              onSelected: (value) async {
+                getItemList(value);
+              },
             );
           } else {
             return const Text('loading');
@@ -287,8 +350,8 @@ class _CafeItemListState extends State<CafeItemList> {
         title: const Text('item List'),
         actions: [
           TextButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                var result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CafeItemAddForm(
@@ -297,6 +360,9 @@ class _CafeItemListState extends State<CafeItemList> {
                     ),
                   ),
                 );
+                if (result == true) {
+                  getItemList(id);
+                }
               },
               child: const Text(
                 '+item',
@@ -308,6 +374,9 @@ class _CafeItemListState extends State<CafeItemList> {
         child: Column(
           children: [
             dropdownMenu,
+            Expanded(
+              child: itemList,
+            ),
           ],
         ),
       ),
