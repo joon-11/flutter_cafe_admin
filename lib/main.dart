@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cafe_admin/cafe_incomplete.dart';
 import 'package:flutter_cafe_admin/cafe_item.dart';
 import 'package:flutter_cafe_admin/cafe_result.dart';
-import 'package:flutter_cafe_admin/order.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -32,7 +32,7 @@ class _NaviState extends State<Navi> {
     ),
   ];
 
-  var pages = [const CafeOrder(), const CafeItem(), const CafeResult()];
+  var pages = [const CafeInComplete(), const CafeItem(), const CafeResult()];
   dynamic body;
   @override
   Widget build(BuildContext context) {
